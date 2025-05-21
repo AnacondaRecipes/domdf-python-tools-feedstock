@@ -6,11 +6,11 @@ package:
   version: {{ version }}
 
 source:
-  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/domdf_python_tools-{{ version }}.tar.gz
-  sha256: 2ae308d2f4f1e9145f5f4ba57f840fbfd1c2983ee26e4824347789649d3ae298
+  url: https://github.com/domdfcoding/{{ name.replace('-', '_')}}/archive/refs/tags/v{{ version }}.tar.gz
+  sha256: bb3ec59bd58a67b204da884730876a22c7c74ce4a93ae7535c9ccd9b29aeb495
 
 build:
-  number: 0
+  number: 1
   script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
   skip: True  # [py<36]
 
@@ -31,16 +31,35 @@ requirements:
     # dates
     - pytz>=2019.1
 
-# We can`t enable pytest because conftest uses the coincidence package, which is unavailable on the main channel.
-# The policy states that packages are not specifically built for testing.
+# E AssertionError: FILES DIFFER:
+# E /test_paths_/test_iterchildren_match.yml
+# E /test_paths_/test_iterchildren_match.obtained.yml
+{% set tests_to_skip = "test_iterchildren" %}
+# E AssertionError: FILES DIFFER:
+# E /test_import_tools_/test_discover_entry_points_by_name_name_match_func.yml
+# E /test_import_tools_/test_discover_entry_points_by_name_name_match_func.obtained.yml
+{% set tests_to_skip = tests_to_skip + " or test_discover_entry_points" %}
+# E    AssertionError: FILES DIFFER:
+# /test_import_tools_/test_iter_submodules_consolekit_3_9_.yml
+# /test_import_tools_/test_iter_submodules_consolekit_3_9_.obtained.yml
+{% set tests_to_skip = tests_to_skip + " or test_iter_submodules" %}
+
 test:
+  source_files:
+    - tests
   imports:
     - domdf_python_tools
   commands:
     - pip check
     - python -c "from importlib.metadata import version; assert(version('{{ name }}')=='{{ version }}')"
+    - pytest -v -k "not ({{ tests_to_skip }})" tests
   requires:
     - pip
+    - pytest >=6.0.0
+    - coincidence >=0.2.0
+    - click >=7.1.2
+    - faker >=4.1.2
+    - funcy >=1.16
 
 about:
   home: https://github.com/domdfcoding/domdf_python_tools
