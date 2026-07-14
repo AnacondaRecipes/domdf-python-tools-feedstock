@@ -1,3 +1,0 @@
-# disable testing in first pass to avoid cyclic dependencies in test
-build_parameters:
-  - "--no-test"
