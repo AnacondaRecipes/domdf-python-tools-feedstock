@@ -10,7 +10,7 @@ source:
   sha256: bb3ec59bd58a67b204da884730876a22c7c74ce4a93ae7535c9ccd9b29aeb495
 
 build:
-  number: 2
+  number: 3
   script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
   skip: True  # [py<36]
 
@@ -43,6 +43,13 @@ requirements:
 # /test_import_tools_/test_iter_submodules_consolekit_3_9_.yml
 # /test_import_tools_/test_iter_submodules_consolekit_3_9_.obtained.yml
 {% set tests_to_skip = tests_to_skip + " or test_iter_submodules" %}
+# these tests rely on pre py314 behavior. skip now, restore when upgrade to newer project version.
+# E AssertionError: assert "<class 'path...rePosixPath'>" == "<class 'path...rePosixPath'>"
+{% set tests_to_skip = tests_to_skip + " or test_printt" %}  # [py>=314]
+# E AssertionError: Regex pattern did not match.
+# E Expected regex: "The character '☃' was not found in the alphabet."
+# E Actual message: 'list.index(x): x not in list'
+{% set tests_to_skip = tests_to_skip + " or test_alpha_sort" %}  # [py>=314]
 
 test:
   source_files:
